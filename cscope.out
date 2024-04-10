@@ -1,4 +1,4 @@
-cscope 15 $HOME/xv6-public -q 0000001848 0000197772
+cscope 15 $HOME/xv6-public -q 0000001847 0000198385
 	@asm.h
 
 5 
@@ -3725,7 +3725,11 @@ pgdœ
 uva
 );
 
-190 
+190 
+	`myfuùiÚ
+(*);
+
+192 
 	#NELEM
 (
 x
@@ -17690,6 +17694,58 @@ ušt
 
 	)
 
+	@my_userapp.c
+
+1 
+	~"ty³s.h
+"
+
+2 
+	~"¡©.h
+"
+
+3 
+	~"u£r.h
+"
+
+6 
+	$maš
+(
+¬gc
+, *
+¬gv
+[])
+
+8 *
+buf
+ = "Hello xv6!";
+
+9 
+»t_v®
+;
+
+10 
+»t_v®
+=
+	`myfunùiÚ
+(
+buf
+);
+
+11 
+	`´štf
+(1,"R‘uº v®ue: 0x%x\n",
+»t_v®
+);
+
+12 
+	`ex™
+();
+
+13 
+	}
+}
+
 	@param.h
 
 1 
@@ -18359,6 +18415,56 @@ i
 ;
 
 121 
+	}
+}
+
+	@prac_syscall.c
+
+1 
+	~"ty³s.h
+"
+
+2 
+	~"defs.h
+"
+
+5 
+	$myfunùiÚ
+(*
+¡r
+){
+
+6 
+	`ýrštf
+("%s\n",
+¡r
+);
+
+8 
+	}
+}
+
+11 
+	$sys_myfunùiÚ
+()
+
+13 *
+¡r
+;
+
+15 if(
+	`¬g¡r
+(0,&
+¡r
+)<0)
+
+17  
+	`myfunùiÚ
+(
+¡r
+);
+
+18 
 	}
 }
 
@@ -24494,149 +24600,159 @@ sys_wr™e
 sys_u±ime
 ();
 
-107 (*
+106 
+sys_myfunùiÚ
+();
+
+108 (*
 sysÿÎs
 [])() = {
 
-108 [
+109 [
 SYS_fÜk
 ] 
 sys_fÜk
 ,
 
-109 [
+110 [
 SYS_ex™
 ] 
 sys_ex™
 ,
 
-110 [
+111 [
 SYS_wa™
 ] 
 sys_wa™
 ,
 
-111 [
+112 [
 SYS_pe
 ] 
 sys_pe
 ,
 
-112 [
+113 [
 SYS_»ad
 ] 
 sys_»ad
 ,
 
-113 [
+114 [
 SYS_kžl
 ] 
 sys_kžl
 ,
 
-114 [
+115 [
 SYS_exec
 ] 
 sys_exec
 ,
 
-115 [
+116 [
 SYS_f¡©
 ] 
 sys_f¡©
 ,
 
-116 [
+117 [
 SYS_chdœ
 ] 
 sys_chdœ
 ,
 
-117 [
+118 [
 SYS_dup
 ] 
 sys_dup
 ,
 
-118 [
+119 [
 SYS_g‘pid
 ] 
 sys_g‘pid
 ,
 
-119 [
+120 [
 SYS_sbrk
 ] 
 sys_sbrk
 ,
 
-120 [
+121 [
 SYS_¦“p
 ] 
 sys_¦“p
 ,
 
-121 [
+122 [
 SYS_u±ime
 ] 
 sys_u±ime
 ,
 
-122 [
+123 [
 SYS_Ý’
 ] 
 sys_Ý’
 ,
 
-123 [
+124 [
 SYS_wr™e
 ] 
 sys_wr™e
 ,
 
-124 [
+125 [
 SYS_mknod
 ] 
 sys_mknod
 ,
 
-125 [
+126 [
 SYS_uÆšk
 ] 
 sys_uÆšk
 ,
 
-126 [
+127 [
 SYS_lšk
 ] 
 sys_lšk
 ,
 
-127 [
+128 [
 SYS_mkdœ
 ] 
 sys_mkdœ
 ,
 
-128 [
+129 [
 SYS_þo£
 ] 
 sys_þo£
 ,
 
-129 
+130 [
+SYS_myfunùiÚ
+] 
+sys_myfunùiÚ
+,
+
+131 
 	}
 };
 
-132 
+134 
 	$sysÿÎ
 ()
 
-134 
+136 
 num
 ;
 
-135 
+137 
 ´oc
  *
 cu½roc
@@ -24644,7 +24760,7 @@ cu½roc
 	`my´oc
 ();
 
-137 
+139 
 num
  = 
 cu½roc
@@ -24654,7 +24770,7 @@ tf
 —x
 ;
 
-138 if(
+140 if(
 num
  > 0 &&‚um < 
 	`NELEM
@@ -24662,7 +24778,7 @@ num
 sysÿÎs
 ) && syscalls[num]) {
 
-139 
+141 
 cu½roc
 ->
 tf
@@ -24674,11 +24790,11 @@ sysÿÎs
 num
 ]();
 
-141 
+143 
 	`ýrštf
 ("%d %s: unknown sys call %d\n",
 
-142 
+144 
 cu½roc
 ->
 pid
@@ -24688,7 +24804,7 @@ pid
 num
 );
 
-143 
+145 
 cu½roc
 ->
 tf
@@ -24696,7 +24812,7 @@ tf
 —x
  = -1;
 
-145 
+147 
 	}
 }
 
@@ -24827,6 +24943,10 @@ tf
  21
 
 	)
+
+23 
+	#SYS_myfunùiÚ
+ 22
 
 	@sysfile.c
 
@@ -28572,63 +28692,67 @@ fd
 	`u±ime
 ();
 
-28 
+26 
+	`myfunùiÚ
+(*);
+
+29 
 	`¡©
 (cÚ¡ *, 
 ¡©
 *);
 
-29 * 
+30 * 
 	`¡rýy
 (*, const *);
 
-30 *
+31 *
 	`memmove
 (*, const *, );
 
-31 * 
+32 * 
 	`¡rchr
 (cÚ¡ *, 
 c
 );
 
-32 
+33 
 	`¡rcmp
 (const *, const *);
 
-33 
+34 
 	`´štf
 (, const *, ...);
 
-34 * 
+35 * 
 	`g‘s
 (*, 
 max
 );
 
-35 
+36 
 ušt
  
 	`¡¾’
 (const *);
 
-36 * 
+37 * 
 	`mem£t
 (*, , 
 ušt
 );
 
-37 * 
+38 * 
 	`m®loc
 (
 ušt
 );
 
-38 
+39 
 	`ä“
 (*);
 
-39 
+40 
 	`©oi
 (const *);
 
@@ -34803,9 +34927,15 @@ sbrk
 )
 
 31 
-	`SYSCALL
+	$SYSCALL
 (
 u±ime
+)
+
+32 
+	`SYSCALL
+(
+myfunùiÚ
 )
 
 	@vectors.S
@@ -45510,8 +45640,8 @@ ushÜt
 1
 .
 0
-76
-600
+78
+628
 asm.h
 bio.c
 bootasm.S
@@ -45553,9 +45683,11 @@ mkfs.c
 mmu.h
 mp.c
 mp.h
+my_userapp.c
 param.h
 picirq.c
 pipe.c
+prac_syscall.c
 printf.c
 proc.c
 proc.h

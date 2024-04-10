@@ -10,4 +10,6 @@ main(int argc, char *argv[])
     ret_val=myfunction(buf);
     printf(1,"Return value: 0x%x\n",ret_val);
     exit();
+//     __asm__("int $128");
+//     exit(); 
 }

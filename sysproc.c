@@ -42,6 +42,17 @@ sys_getpid(void)
   return myproc()->pid;
 }
 
+// get grand parent process id
+int
+sys_getgpid(void)
+{
+  struct proc* pproc = myproc()->parent;
+  struct proc* gproc = pproc->parent;
+  int t = gproc->pid;
+  return t;
+
+}
+
 int
 sys_sbrk(void)
 {
@@ -89,3 +100,5 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+

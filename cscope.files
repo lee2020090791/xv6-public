@@ -44,6 +44,7 @@
 ./fs.c
 ./kill.c
 ./file.h
+./my_userapp.c
 ./exec.c
 ./string.c
 ./memlayout.h
@@ -61,6 +62,7 @@
 ./vectors.S
 ./sleeplock.h
 ./umalloc.c
+./prac_syscall.c
 ./proc.h
 ./entry.S
 ./grep.c

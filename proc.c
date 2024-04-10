@@ -20,6 +20,63 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+//pr2 
+struct queue{
+  struct spinlock lock;
+  struct proc *head;  // head pointer of queue
+  struct proc *tail;  // tail pointer of queue
+  int timequantum;   // time quantum of queue
+  int level;   // queue level 0~3
+};
+struct queue L0;   //RR scheduling
+struct queue L1;   //RR scheduling
+struct queue L2;   //RR scheduling
+struct queue L3;   //priority scheduling 
+
+void enqueue(struct queue *q, struct proc *p)
+{
+  if(p->level != -1){
+    return;
+  }
+  acquire(&q->lock);
+  p->next=0; // process's next pointer set null
+  if(q->head==0){
+    q->head = p;
+    q->tail = p; // set head&tail pointers to the process
+  }
+  else{
+    q->tail->next=p;
+    q->tail=p; // tail process's next set to p & set p to tail
+  }
+  p->level=q->level;
+  release(&q->lock);
+}
+void dequeue(struct queue*q, struct proc*p){
+  if(q->level != p->level){
+    return;
+  }
+  acquire(&q->lock);
+  if(q->head==p){   // if dequeued process is head of the queue -> FCFS
+    q->head=p->next;
+    if(q->head ==0){ // if dequeued process is last element of queue
+      q->tail=0;
+    }
+    p->next=0; // set dequeued process's next null
+  } 
+  else{ // if dequeued process is not head of the queue -> for Priority
+    struct proc *prev = q->head; // start from the head
+    while(prev->next != p && prev->next !=0){ // find the process to be dequeued
+      prev=prev->next;
+    }
+    prev->next=p->next; //linking for previous and p->next
+    if(q->tail ==p){
+      q->tail=prev;
+    } 
+    p->next=0; // set dequeued process's next null
+  }
+  p->level=-1;
+  release(&q->lock);
+}
 void
 pinit(void)
 {
@@ -88,6 +145,11 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+
+  p->level=-1;
+  p->tq=0;
+  p->priority=3; // initialize process 
+  enqueue(&L0,p);
 
   release(&ptable.lock);
 
@@ -326,6 +388,15 @@ scheduler(void)
   struct cpu *c = mycpu();
   c->proc = 0;
   
+  L0.level=0;
+  L1.level=1;
+  L2.level=2;
+  L3.level=3;
+  L0.timequantum=2;
+  L1.timequantum=4;
+  L2.timequantum=6;
+  L3.timequantum=8;
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -333,6 +404,7 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      
       if(p->state != RUNNABLE)
         continue;
 
