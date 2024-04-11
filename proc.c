@@ -32,6 +32,7 @@ struct queue L0;   //RR scheduling
 struct queue L1;   //RR scheduling
 struct queue L2;   //RR scheduling
 struct queue L3;   //priority scheduling 
+struct queue MoQ;  // Monopoy Queue
 
 void enqueue(struct queue *q, struct proc *p)
 {
@@ -148,7 +149,7 @@ found:
 
   p->level=-1;
   p->tq=0;
-  p->priority=3; // initialize process 
+  p->priority=0; // initialize process 
   enqueue(&L0,p);
 
   release(&ptable.lock);
@@ -277,6 +278,10 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
+  /*
+  
+  */ 
+  
 
   release(&ptable.lock);
 
@@ -384,7 +389,7 @@ wait(void)
 void
 scheduler(void)
 {
-  struct proc *p;
+  struct proc *p, *post, *high_p;
   struct cpu *c = mycpu();
   c->proc = 0;
   
@@ -403,24 +408,149 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    // for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       
-      if(p->state != RUNNABLE)
-        continue;
+    //   if(p->state != RUNNABLE)
+    //     continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+    //   // Switch to chosen process.  It is the process's job
+    //   // to release ptable.lock and then reacquire it
+    //   // before jumping back to us.
+    //   c->proc = p;
+    //   switchuvm(p);
+    //   p->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
+    //   swtch(&(c->scheduler), p->context);
+    //   switchkvm();
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
+    //   // Process is done running for now.
+    //   // It should have changed its p->state before coming back.
+    //   c->proc = 0;
+    // }
+    if(L0.head!=0){
+      for(p=L0.head;p!=0;p=post){
+        post = p->next;
+        if(p->state != RUNNABLE)  continue;
+        c->proc=p;
+        switchuvm(p);
+        p->state=RUNNING;
+        p->tq++;
+        swtch(&(c->scheduler),p->context);
+        switchkvm();
+        c->proc=0;
+      }
+      if(p->state==ZOMBIE){ // process finished
+        dequeue(&L0,p);
+      }
+      else if(p->tq>=L0.timequantum){ // use all tq
+        p->tq=0;
+        dequeue(&L0,p);
+        if(p->pid % 2 == 1) { // pid is odd
+          enqueue(&L1,p);
+        }
+        else{ // pid is even
+          enqueue(&L2,p);
+        }
+      }
+      else{
+        dequeue(&L0, p);
+        enqueue(&L0, p);
+      }
+    }
+    if(L1.head != 0){
+      for(p=L1.head;p!=0;p=post){
+        post=p->next;
+        if(p->state != RUNNABLE)  continue;
+        c->proc=p;
+        switchuvm(p);
+        p->state=RUNNING;
+        p->tq++;
+        swtch(&(c->scheduler),p->context);
+        switchkvm();
+        c->proc=0;
+      }
+      if(p->state==ZOMBIE){ // process finished
+        dequeue(&L1,p);
+      }
+      else if(p->tq>=L1.timequantum){ // use all tq
+        p->tq=0;
+        dequeue(&L1,p);
+        if(p->pid % 2 == 1) { // pid is odd
+          enqueue(&L3,p);
+        }
+        else{ // pid is even
+          enqueue(&L3,p);
+        }
+      }
+      else{
+        dequeue(&L1, p);
+        enqueue(&L1, p);
+      }
+    }
+    if(L2.head != 0){
+      for(p=L2.head;p!=0;p=post){
+        post=p->next;
+        if(p->state != RUNNABLE)  continue;
+        c->proc=p;
+        switchuvm(p);
+        p->state=RUNNING;
+        p->tq++;
+        swtch(&(c->scheduler),p->context);
+        switchkvm();
+        c->proc=0;
+      }
+      if(p->state==ZOMBIE){ // process finished
+        dequeue(&L2,p);
+      }
+      else if(p->tq>=L1.timequantum){ // use all tq
+        p->tq=0;
+        dequeue(&L2,p);
+        if(p->pid % 2 == 1) { // pid is odd
+          enqueue(&L3,p);
+        }
+        else{ // pid is even
+          enqueue(&L3,p);
+        }
+      }
+      else{
+        dequeue(&L2, p);
+        enqueue(&L2, p);
+      }
+    }
+    if(L3.head !=0){ // schedule priority
+      for(p=L3.head;p!=0;p=post){
+        post = p->next;
+        if(p->state != RUNNABLE){
+          continue;
+        }
+        high_p=p;
+        int highest_priority = p->priority;
+        struct proc *temp;
+        for(temp=p->next;temp!=0;temp->next){
+          if(temp->priority<highest_priority){
+            high_p=temp;
+            highest_priority=temp->priority;
+          }
+        }
+        // run process which is highest priority
+        p=high_p;
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
+        p->tq++;
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+        c->proc = 0;
+        if(p->state==ZOMBIE){
+          dequeue(&L3,p);
+        }
+        else if(p->tq>=L3.timequantum){
+          if(p->priority>0 && p->priority<=10){
+            p->priority--;
+          }
+          p->tq=0;
+        }
+      }
     }
     release(&ptable.lock);
 
@@ -462,6 +592,115 @@ yield(void)
   sched();
   release(&ptable.lock);
 }
+
+int 
+getLevel(void)
+{
+  struct proc *p = myproc();
+  if(p==0) return -1;
+  return p->level;
+}
+
+int 
+setpriority(int pid, int priority)
+{
+  if(priority>10 || priority <0) return -2;
+  struct proc *p;
+  acquire(&ptable.lock);
+  for(p=ptable.proc;p<&ptable.proc[NPROC];p++){
+    if(p->pid==pid){
+      p->priority=priority;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
+void 
+priorityBoosting(void)
+{
+  struct proc*p;
+  acquire(&ptable.lock);
+  for(p=ptable.proc;p<&ptable.proc[NPROC];p++){
+    if(p->level==1){
+      dequeue(&L1,p);
+      enqueue(&L0,p);
+    }
+    else if(p->level==2){
+      dequeue(&L2,p);
+      enqueue(&L0,p);
+    }
+    else if(p->level==3){
+      dequeue(&L3,p);
+      enqueue(&L0,p);
+    }
+    p->priority=0;
+    p->tq=0;
+  }
+  release(&ptable.lock);
+}
+
+int
+sizeQueue(struct queue* q)
+{
+  int m=0;
+  struct proc *p,*post;
+  for(p=q->head;p!=0;p=post){
+    post=p->next;
+    m++;
+  }
+  return m;
+}
+
+int 
+setmonopoly(int pid, int password)
+{
+  if(password != 2020090791) return -2;
+  struct proc *p ,*temp;
+  MoQ.level=99;
+  acquire(&ptable.lock);
+  for(p=ptable.proc;p<&ptable.proc[NPROC];p++){
+    if(p->pid==pid) {
+      enqueue(&MoQ,p);
+      release(&ptable.lock);
+      return sizeQueue(&MoQ);
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
+void
+monopolize()
+{
+  MoQ.level=99;
+  struct proc *p;
+  struct cpu *c=mycpu();
+  for(;;){
+    sti();
+    for(p=ptable.proc;p<&ptable.proc[NPROC];p++){
+      if(p->pid>0){
+        for(;;){ // if got timer interrupt, ignore and switch same process
+          c->proc=p;
+          switchuvm(p);
+          p->state=RUNNING;
+          swtch(&(c->scheduler),p->context);
+          switchkvm();
+
+          c->proc=0;
+        }
+      }
+    }
+  }
+}
+void
+unmonopolize(void)
+{
+  ;
+}
+
 
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
