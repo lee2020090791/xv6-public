@@ -101,4 +101,45 @@ sys_uptime(void)
   return xticks;
 }
 
+void
+sys_yield(void)
+{
+  yield();
+}
+
+int
+sys_getLevel(void)
+{
+  return getLevel();
+}
+
+int 
+sys_setpriority()
+{
+  int pid, priority;
+  argint(0,pid);
+  argint(1,priority);
+  return setpriority(pid,priority);
+}
+
+int
+sys_setmonopoly()
+{
+  int pid, pw;
+  argint(0,pid);
+  argint(1,pw);
+  return setmonoply(pid,pw);
+}
+
+void
+sys_monopolize()
+{
+  monopolize();
+}
+
+void
+sys_unmonopolize()
+{
+  unmonopolize();
+}
 

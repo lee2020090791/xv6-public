@@ -15,6 +15,7 @@ struct {
 static struct proc *initproc;
 
 int nextpid = 1;
+int monopolized = 0;
 extern void forkret(void);
 extern void trapret(void);
 
@@ -408,25 +409,25 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    // for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      
-    //   if(p->state != RUNNABLE)
-    //     continue;
-
-    //   // Switch to chosen process.  It is the process's job
-    //   // to release ptable.lock and then reacquire it
-    //   // before jumping back to us.
-    //   c->proc = p;
-    //   switchuvm(p);
-    //   p->state = RUNNING;
-
-    //   swtch(&(c->scheduler), p->context);
-    //   switchkvm();
-
-    //   // Process is done running for now.
-    //   // It should have changed its p->state before coming back.
-    //   c->proc = 0;
-    // }
+    if(monopolized){
+      for(p=MoQ.head;p!=0;p=post){
+        post=p->next;
+        if(p->state==RUNNABLE) break;
+      }
+      if(p==0){
+        unmonopolize();
+        release(&ptable.lock);
+        continue;
+      }
+      c->proc=p;
+      switchuvm(p);
+      p->state=RUNNING;
+      swtch(&(c->scheduler),p->context);
+      switchkvm();
+      c->proc=0;
+      release(&ptable.lock);
+      continue;
+    }
     if(L0.head!=0){
       for(p=L0.head;p!=0;p=post){
         post = p->next;
@@ -675,30 +676,12 @@ setmonopoly(int pid, int password)
 void
 monopolize()
 {
-  MoQ.level=99;
-  struct proc *p;
-  struct cpu *c=mycpu();
-  for(;;){
-    sti();
-    for(p=ptable.proc;p<&ptable.proc[NPROC];p++){
-      if(p->pid>0){
-        for(;;){ // if got timer interrupt, ignore and switch same process
-          c->proc=p;
-          switchuvm(p);
-          p->state=RUNNING;
-          swtch(&(c->scheduler),p->context);
-          switchkvm();
-
-          c->proc=0;
-        }
-      }
-    }
-  }
+  monopolized=1;
 }
 void
 unmonopolize(void)
 {
-  ;
+  monopolized=0;
 }
 
 
