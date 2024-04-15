@@ -23,7 +23,7 @@
 #define SYS_myfunction 22
 #define SYS_getgpid 23
 #define SYS_yield 24
-#define SYS_getLevel 25
+#define SYS_getlev 25
 #define SYS_setpriority 26
 #define SYS_setmonopoly 27
 #define SYS_monopolize 28

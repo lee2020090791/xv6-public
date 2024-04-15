@@ -402,13 +402,14 @@ scheduler(void)
   L1.timequantum=4;
   L2.timequantum=6;
   L3.timequantum=8;
-
+  cprintf("sched start\n");
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+
     if(monopolized){
       for(p=MoQ.head;p!=0;p=post){
         post=p->next;
@@ -428,131 +429,148 @@ scheduler(void)
       release(&ptable.lock);
       continue;
     }
-    if(L0.head!=0){
-      for(p=L0.head;p!=0;p=post){
-        post = p->next;
-        if(p->state != RUNNABLE)  continue;
-        c->proc=p;
-        switchuvm(p);
-        p->state=RUNNING;
-        p->tq++;
-        swtch(&(c->scheduler),p->context);
-        switchkvm();
-        c->proc=0;
-      }
-      if(p->state==ZOMBIE){ // process finished
-        dequeue(&L0,p);
-      }
-      else if(p->tq>=L0.timequantum){ // use all tq
-        p->tq=0;
-        dequeue(&L0,p);
-        if(p->pid % 2 == 1) { // pid is odd
-          enqueue(&L1,p);
-        }
-        else{ // pid is even
-          enqueue(&L2,p);
-        }
-      }
-      else{
-        dequeue(&L0, p);
-        enqueue(&L0, p);
-      }
-    }
-    if(L1.head != 0){
-      for(p=L1.head;p!=0;p=post){
-        post=p->next;
-        if(p->state != RUNNABLE)  continue;
-        c->proc=p;
-        switchuvm(p);
-        p->state=RUNNING;
-        p->tq++;
-        swtch(&(c->scheduler),p->context);
-        switchkvm();
-        c->proc=0;
-      }
-      if(p->state==ZOMBIE){ // process finished
-        dequeue(&L1,p);
-      }
-      else if(p->tq>=L1.timequantum){ // use all tq
-        p->tq=0;
-        dequeue(&L1,p);
-        if(p->pid % 2 == 1) { // pid is odd
-          enqueue(&L3,p);
-        }
-        else{ // pid is even
-          enqueue(&L3,p);
-        }
-      }
-      else{
-        dequeue(&L1, p);
-        enqueue(&L1, p);
-      }
-    }
-    if(L2.head != 0){
-      for(p=L2.head;p!=0;p=post){
-        post=p->next;
-        if(p->state != RUNNABLE)  continue;
-        c->proc=p;
-        switchuvm(p);
-        p->state=RUNNING;
-        p->tq++;
-        swtch(&(c->scheduler),p->context);
-        switchkvm();
-        c->proc=0;
-      }
-      if(p->state==ZOMBIE){ // process finished
-        dequeue(&L2,p);
-      }
-      else if(p->tq>=L1.timequantum){ // use all tq
-        p->tq=0;
-        dequeue(&L2,p);
-        if(p->pid % 2 == 1) { // pid is odd
-          enqueue(&L3,p);
-        }
-        else{ // pid is even
-          enqueue(&L3,p);
-        }
-      }
-      else{
-        dequeue(&L2, p);
-        enqueue(&L2, p);
-      }
-    }
-    if(L3.head !=0){ // schedule priority
-      for(p=L3.head;p!=0;p=post){
-        post = p->next;
-        if(p->state != RUNNABLE){
-          continue;
-        }
-        high_p=p;
-        int highest_priority = p->priority;
-        struct proc *temp;
-        for(temp=p->next;temp!=0;temp->next){
-          if(temp->priority<highest_priority){
-            high_p=temp;
-            highest_priority=temp->priority;
+    for(p=ptable.proc;p<&ptable.proc[NPROC];p++){
+      if(p!=0 && p->pid>0){
+        if(L0.head!=0){
+          for(p=L0.head;p!=0;p=post){
+            post = p->next;
+            if(p->state != RUNNABLE || p->pid<=0){
+              continue;
+            }  
+            //run
+            c->proc=p;
+            switchuvm(p);
+            p->state=RUNNING;
+            p->tq++;
+            swtch(&(c->scheduler),p->context);
+            switchkvm();
+            c->proc=0;
+
+            if(p->state==ZOMBIE){ // process finished
+              dequeue(&L0,p);
+            }
+            else if(p->tq>=L0.timequantum){ // use all tq
+              p->tq=0;
+              dequeue(&L0,p);
+              if(p->pid % 2 == 1) { // pid is odd
+                enqueue(&L1,p);
+              }
+              else{ // pid is even
+                enqueue(&L2,p);
+              }
+            }
+            else{
+              dequeue(&L0, p);
+              enqueue(&L0, p);
+            }
+            goto end;
           }
         }
-        // run process which is highest priority
-        p=high_p;
-        c->proc = p;
-        switchuvm(p);
-        p->state = RUNNING;
-        p->tq++;
-        swtch(&(c->scheduler), p->context);
-        switchkvm();
-        c->proc = 0;
-        if(p->state==ZOMBIE){
-          dequeue(&L3,p);
-        }
-        else if(p->tq>=L3.timequantum){
-          if(p->priority>0 && p->priority<=10){
-            p->priority--;
+        if(L1.head != 0){
+          for(p=L1.head;p!=0;p=post){
+            post=p->next;
+            if(p->state != RUNNABLE)  continue;
+            c->proc=p;
+            switchuvm(p);
+            p->state=RUNNING;
+            p->tq++;
+            swtch(&(c->scheduler),p->context);
+            switchkvm();
+            c->proc=0;
+            if(p->state==ZOMBIE){ // process finished
+              dequeue(&L1,p);
+            }
+            else if(p->tq>=L1.timequantum){ // use all tq
+              p->tq=0;
+              dequeue(&L1,p);
+              if(p->pid % 2 == 1) { // pid is odd
+                enqueue(&L3,p);
+              }
+              else{ // pid is even
+                enqueue(&L3,p);
+              }
+            }
+            else{
+              dequeue(&L1, p);
+              enqueue(&L1, p);
+            }
+            goto end;
           }
-          p->tq=0;
+          
+        }
+        if(L2.head != 0){
+          for(p=L2.head;p!=0;p=post){
+            post=p->next;
+            if(p->state != RUNNABLE)  continue;
+            c->proc=p;
+            switchuvm(p);
+            p->state=RUNNING;
+            p->tq++;
+            swtch(&(c->scheduler),p->context);
+            switchkvm();
+            c->proc=0;
+
+            if(p->state==ZOMBIE){ // process finished
+              dequeue(&L2,p);
+            }
+            else if(p->tq>=L1.timequantum){ // use all tq
+              p->tq=0;
+              dequeue(&L2,p);
+              if(p->pid % 2 == 1) { // pid is odd
+                enqueue(&L3,p);
+              }
+              else{ // pid is even
+                enqueue(&L3,p);
+              }
+            }
+            else{
+              dequeue(&L2, p);
+              enqueue(&L2, p);
+            }
+            goto end;
+          }
+        
+        }
+        if(L3.head !=0){ // schedule priority
+          for(p=L3.head;p!=0;p=post){
+            post = p->next;
+            if(p->state != RUNNABLE){
+              continue;
+            }
+            high_p=p;
+            int highest_priority = p->priority;
+            for(struct proc *temp=p->next;temp!=0;temp=temp->next){
+              if(temp->priority>highest_priority){
+                high_p=temp;
+                highest_priority=temp->priority;
+              }
+            }
+            // run process which is highest priority
+            p=high_p;
+            c->proc = p;
+            switchuvm(p);
+            p->state = RUNNING;
+            p->tq++;
+            swtch(&(c->scheduler), p->context);
+            switchkvm();
+            c->proc = 0;
+            if(p->state==ZOMBIE){
+              dequeue(&L3,p);
+            }
+            else if(p->tq>=L3.timequantum){
+              if(p->priority>0 && p->priority<=10){
+                p->priority--;
+              }
+              p->tq=0;
+            }
+            goto end;
+          }
         }
       }
+      goto end;
     }
+    
+    end:
     release(&ptable.lock);
 
   }
@@ -595,7 +613,7 @@ yield(void)
 }
 
 int 
-getLevel(void)
+getlev(void)
 {
   struct proc *p = myproc();
   if(p==0) return -1;
@@ -659,7 +677,7 @@ int
 setmonopoly(int pid, int password)
 {
   if(password != 2020090791) return -2;
-  struct proc *p ,*temp;
+  struct proc *p;
   MoQ.level=99;
   acquire(&ptable.lock);
   for(p=ptable.proc;p<&ptable.proc[NPROC];p++){

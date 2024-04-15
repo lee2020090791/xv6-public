@@ -106,7 +106,7 @@ extern int sys_uptime(void);
 extern int sys_myfunction(void);
 extern int sys_getgpid(void);
 extern int sys_yield(void);
-extern int sys_getLevel(void);
+extern int sys_getlev(void);
 extern int sys_setpriority(void);
 extern int sys_setmonopoly(void);
 extern int sys_monopolize(void);
@@ -138,7 +138,7 @@ static int (*syscalls[])(void) = {
 [SYS_getgpid] sys_getgpid,
 //pr2
 [SYS_yield]   sys_yield,
-[SYS_getLevel]   sys_getLevel,
+[SYS_getlev]   sys_getlev,
 [SYS_setpriority]   sys_setpriority,
 [SYS_setmonopoly]   sys_setmonopoly,
 [SYS_monopolize]   sys_monopolize,

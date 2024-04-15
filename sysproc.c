@@ -108,17 +108,17 @@ sys_yield(void)
 }
 
 int
-sys_getLevel(void)
+sys_getlev(void)
 {
-  return getLevel();
+  return getlev();
 }
 
 int 
 sys_setpriority()
 {
   int pid, priority;
-  argint(0,pid);
-  argint(1,priority);
+  argint(0,&pid);
+  argint(1,&priority);
   return setpriority(pid,priority);
 }
 
@@ -126,9 +126,9 @@ int
 sys_setmonopoly()
 {
   int pid, pw;
-  argint(0,pid);
-  argint(1,pw);
-  return setmonoply(pid,pw);
+  argint(0,&pid);
+  argint(1,&pw);
+  return setmonopoly(pid,pw);
 }
 
 void

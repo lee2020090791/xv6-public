@@ -122,13 +122,14 @@ int             wait(void);
 void            wakeup(void*);
 // pr2
 void            yield(void);
-int             getLevel(void);
+int             getlev(void);
 int             setpriority(int pid, int priority);
 int             setmonopoly(int pid, int password);
 void            monopolize();
 void            unmonopolize();
 void            enqueue(struct queue *q, struct proc *p);
 void            dequeue(struct queue *q, struct proc *p);
+void            priorityBoosting();
 // swtch.S
 void            swtch(struct context**, struct context*);
 

@@ -27,7 +27,7 @@ int myfunction(char*);
 int getgpid(void);
 //pr2
 void yield(void);
-int getLevel(void);
+int getlev(void);
 int setpriority(int pid, int priority);
 int setmonopoly(int pid, int password);
 void monopolize();
