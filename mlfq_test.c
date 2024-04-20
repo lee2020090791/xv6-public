@@ -54,7 +54,8 @@ int fork_children3()
     {
       sleep(10);
       return getpid();
-    }else{
+    }
+    else{
       int r = 0;
       if(p % 2 == 1)
       {
@@ -72,9 +73,10 @@ int fork_children3()
 }
 void exit_children()
 {
-  if (getpid() != parent)
+  if (getpid() != parent){
     exit();
-  while (wait() != -1);
+  }
+  while (wait() != -1) ;
 }
 
 int main(int argc, char *argv[])
@@ -167,7 +169,6 @@ int main(int argc, char *argv[])
 
   printf(1, "[Test 4] MoQ\n");
   pid = fork_children3();
-
   if(pid != parent)
   {
     if(pid == 36)
@@ -182,9 +183,9 @@ int main(int argc, char *argv[])
       {
         if(x != 99)
         {
-	  printf(1, "Wrong level: %d\n", x);
-	  exit();
-	}
+          printf(1, "Wrong level: %d\n", x);
+          exit();
+	      }
       }
       if(x == 99) count[4]++;
       else count[x]++;

@@ -52,6 +52,7 @@ trap(struct trapframe *tf)
     return;
   }
 
+
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
     if(cpuid() == 0){
@@ -59,6 +60,9 @@ trap(struct trapframe *tf)
       ticks++;
       if(ticks>=100){
         priorityBoosting();
+        ticks=0;
+      }
+      if(monototrap()==1){
         ticks=0;
       }
       wakeup(&ticks);

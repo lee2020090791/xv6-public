@@ -130,6 +130,7 @@ void            unmonopolize();
 void            enqueue(struct queue *q, struct proc *p);
 void            dequeue(struct queue *q, struct proc *p);
 void            priorityBoosting();
+int             monototrap();
 // swtch.S
 void            swtch(struct context**, struct context*);
 

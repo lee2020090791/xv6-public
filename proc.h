@@ -52,7 +52,7 @@ struct proc {
   // project 2
   int level;                   // The level of queue where process exist
   int tq;                      // Process time quantum
-  int priority;
+  int priority;                 // Priority of Process
   struct proc *next;            // Next process in the queue for linked list
 
 };
