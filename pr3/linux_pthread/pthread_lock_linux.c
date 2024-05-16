@@ -1,16 +1,24 @@
 #include <stdio.h>
 #include <pthread.h>
+typedef unsigned int uint;
+struct mutex{
+    uint locked;
+    char* name;
+};
 
 int shared_resource = 0;
 
 #define NUM_ITERS 10
 #define NUM_THREADS 10
 
+int n;
+
 void lock();
 void unlock();
 
 void lock()
 {
+
 }
 
 void unlock()
