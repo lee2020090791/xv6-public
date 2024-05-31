@@ -7,49 +7,52 @@
 int shared_resource = 0;
 int turn=0;
 int flag[NUM_THREADS];
-int flag2[NUM_THREADS];
-int n=0;
-
+#define n 10
+struct mutex{
+    int locked;
+    int id;
+};
+int other[n];
 
 
 void lock();
 void unlock();
-
-void lock(int tid)
+int 
+checkother(int *other)
 {
-    n++;
-    int i;
-
-    while(1){ 
+    for(int i=1;i<n;i++){
+        if(flag[other[i]])
+            return 1;
+    }
+    return 0;
+}
+void giveturn(struct mutex *m)
+{
+    for(int i=1;i<n;i++){
+        if(flag[(m->id+i)%n]){
+            turn=(m->id+i)%n;
+            break;
+        }
+    }
+}
+void lock(struct mutex *m)
+{
+    int other[n];
+    for(int i=1;i<n;i++){
+        other[i]=(m->id+i)%n;
+    }  
+    flag[m->id]=1;
+    turn = -1;
+    while(checkother(other)&&turn!=m->id){
         
-        flag[tid]=1; 
-        while(turn!=tid){
-            if(flag[turn]==0){
-                turn = tid;
-            }
-        }
-        ////////////////////////////
-        for(int j=0;j<NUM_THREADS;j++){
-            flag2[j]=0;
-        }
-        flag2[tid]=1;
-        i=0;
-        while((i<n)){ // check other thread is in 2nd block
-            if(i==tid || flag2[i]!=1){ // i!=tid&flag2[i]=1 means other thread is in block
-                i++;
-                continue;
-            }
-            break;
-        }
-        if(i==n){
-            break;
-        }
-    }   
+    }
 }
 
-void unlock(int tid)
+
+void unlock(struct mutex *m)
 {
-    flag[tid]=0;
+    flag[m->id]=0;
+    giveturn(m);
 }
 
 void* thread_func(void* arg) {
@@ -74,7 +77,6 @@ int main() {
     
     for (int i = 0; i < NUM_THREADS; i++) {
         pthread_join(threads[i], NULL);
-        n--;
     }
 
     printf("shared: %d\n", shared_resource);
